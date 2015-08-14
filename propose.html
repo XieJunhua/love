@@ -1,0 +1,136 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>1分钟最浪漫的求婚</title>
+	<style>
+    	body{background: #EF817D;text-align: center;}
+		canvas{cursor:pointer}
+    </style>
+  </head>
+  <body>
+    <canvas id="pane" width="1024" height="520" ></canvas>
+    <audio id="sound">
+      <source src="images/cannon_in_d.mp3" type="audio/mpeg">
+      Your browser does not support the audio element.
+    </audio>
+
+    <script>
+      var sound = document.getElementById("sound");
+	  sound.volume = 0.1;         
+	  sound.play();
+      var bg = new Image(); bg.src = "images/bg.png";
+      var yes = new Image(); yes.src = "images/yes.png";
+      var no = new Image(); no.src = "images/no.png";
+      var answer0=new Image();answer0.src="images/answer0.png";  
+      var answer1=new Image();answer1.src="images/answer1.png";
+      var answer=[answer0,answer1];
+      var hart = new Image(); hart.src="images/hart.png";
+      var flower = new Image(); flower.src="images/flower.png";
+      var person = new Image(); person.src="images/person.png";  
+
+      var canvas = document.getElementById('pane');
+      var ctx = canvas.getContext('2d');
+    
+      var flowers = [];
+      for(var i=0;i<99;i++) flowers[i] = new Flower();
+    
+      var btnY = new Btn(460,330,328,246,yes);
+      var btnN = new Btn(564,402,686,294,no);
+
+      var pass = false;
+      setInterval(function(){
+        ctx.drawImage(bg, 0, 0);
+        for(var i=0; i<flowers.length; i++) flowers[i].paint(); 
+        ctx.drawImage(person, 0, 0);
+        if(pass) {
+	  btnY.paintHart();
+        }else{ 
+          btnY.paintBtn();
+          btnN.paintBtn();
+        }
+      }, 1000/20);
+    
+      canvas.onclick = function(evt){
+        if(pass) return;
+        var e = evt||event;
+        var mpoint = getPointOnCanvas(e.x,e.y);
+        if(btnY.contains(mpoint.x,mpoint.y)){
+          pass = true;
+        }
+      };
+      
+      canvas.onmousemove = function(evt){
+        if(pass) return;
+        var e = evt||event;
+        var mpoint = getPointOnCanvas(e.x,e.y);        
+        if(btnN.contains(mpoint.x, mpoint.y)){
+          var rx;
+	  var ry;
+	  var d;
+          do{ax = Math.floor((Math.random() * 190) + 648);
+            ay = Math.floor((Math.random() * 190) + 210);
+            d = Math.sqrt(Math.pow((mpoint.x-ax),2)
+                 +Math.pow((mpoint.y-ay),2));
+          }while(d<btnN.r || d > (btnN.r+10));
+          btnN.x = ax;
+          btnN.y = ay;
+        }
+      };       
+     
+    function Flower(){
+      this.x=Math.floor(Math.random()*(1024-flower.naturalWidth));
+      this.y=Math.floor(Math.random()*(520-flower.naturalHeight)); 
+      this.scale=Math.floor((Math.random()*71)+30)/100;
+      this.step=Math.floor(Math.random() * 5 +1);
+      this.paint = function(){
+        this.y+=this.step;
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.scale(this.scale, this.scale);
+        ctx.drawImage(flower, 0, 0);
+        ctx.restore();
+        if(this.y>=520){
+          this.y = -flower.naturalHeight;
+          this.x = Math.floor(Math.random()*(1024-flower.naturalWidth));
+        }
+      };           
+    };
+    
+    function Btn(pointx,pointy,x,y,say){
+      this.x=x; this.y=y;
+      this.pointx=pointx; this.pointy=pointy;
+      this.r=50;
+      this.say=say;
+      this.index=0;
+      this.paintBtn=function(){
+        this.index+=0.2;
+        var img = answer[Math.floor(this.index)%2];
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        var a = Math.atan((this.y- this.pointy)/(this.x - this.pointx));
+        a=a<0?a+Math.PI:a;
+        ctx.rotate(a);
+        ctx.drawImage(img,-img.naturalWidth/2+10,-img.naturalHeight/2);
+        ctx.restore();
+        ctx.drawImage(this.say,this.x-this.say.naturalWidth/2,
+	      this.y-this.say.naturalHeight/2);
+      };
+      this.contains = function(ex,ey){
+        return Math.sqrt(Math.pow((ex-this.x),2)
+	       +Math.pow((ey-this.y),2))<this.r;
+      };
+      this.paintHart=function(){
+        ctx.drawImage(hart,0,0);
+      };
+    };
+    
+    function getPointOnCanvas(x,y){
+      var bbox =canvas.getBoundingClientRect();
+      return {x:x-bbox.left*(canvas.width/bbox.width),
+          y:y-bbox.top*(canvas.height/bbox.height)
+      };
+    }
+    </script>
+  </body>
+</html>
